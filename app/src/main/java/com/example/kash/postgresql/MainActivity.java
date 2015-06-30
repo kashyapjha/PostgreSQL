@@ -2,23 +2,28 @@ package com.example.kash.postgresql;
 
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.support.v7.app.ActionBarActivity;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
+import android.widget.Toast;
 
 import java.io.File;
+import java.lang.reflect.Array;
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
 
 
 public class MainActivity extends ActionBarActivity
 {
+    String user,url,DB,password;
+    int port;
     ListView lvProfiles;
     @Override
     protected void onCreate(Bundle savedInstanceState)
@@ -26,20 +31,56 @@ public class MainActivity extends ActionBarActivity
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         lvProfiles= (ListView)findViewById(R.id.lvProfiles);
+        populateList();
+    }
+
+    public void populateList() {
         File prefsdir=new File(getApplicationInfo().dataDir,"shared_prefs");
         if(prefsdir.exists() && prefsdir.isDirectory())
         {
-            String[] profiles =prefsdir.list();
-            final ArrayList<String> list =new ArrayList<String>();
-            for(int i=0;i<profiles.length-1;i++)
+            String[] profiles=prefsdir.list();
+            final ArrayList<String> list = new ArrayList<>();
+            for(int i=0;i<profiles.length;i++)
             {
-                list.add(profiles[i]);
+                list.add(profiles[i].replaceFirst(".xml",""));
             }
-            final StableArrayAdapter adapter=new StableArrayAdapter(this,android.R.layout.simple_list_item_1,list);
+            list.remove("com.example.kash.postgresql_preferences");
+            final ArrayAdapter<String> adapter=new ArrayAdapter(this,android.R.layout.simple_list_item_1,list);
             lvProfiles.setAdapter(adapter);
+            lvProfiles.setClickable(true);
+            lvProfiles.setLongClickable(true);
+            lvProfiles.setOnItemClickListener(new AdapterView.OnItemClickListener()
+            {
+                @Override
+                public void onItemClick(AdapterView<?> parent, View view, int position, long id)
+                {
+                    String profile=adapter.getItem(position);
+                    profile=profile.replaceFirst(".xml","");
+                    Toast.makeText(getApplicationContext(),"Profile "+profile+" selected",Toast.LENGTH_SHORT).show();
+                    openTextual(profile);
+                }
+            });
         }
     }
 
+    private void openTextual(String profile)
+    {
+        SharedPreferences prefs= this.getSharedPreferences(profile, Context.MODE_PRIVATE);
+        user=prefs.getString("User", "").toString();
+        url=prefs.getString("URL","");
+        password=prefs.getString("Password","");
+        DB=prefs.getString("DB","");
+        port = prefs.getInt("Port", 5432);
+        Toast.makeText(this,"Profile Name: "+profile+"\n"+"URL: "+url+"\n"+"Username: "+user+"\n"+"Password: "+password+"\n"+"Database Name: "+DB+"\n"+"Port Name: "+port,Toast.LENGTH_LONG).show();
+
+    }
+
+    @Override
+    protected void onResume()
+    {
+        super.onResume();
+        populateList();
+    }
     @Override
     public boolean onCreateOptionsMenu(Menu menu)
     {
@@ -73,29 +114,5 @@ public class MainActivity extends ActionBarActivity
             break;
         }
         return super.onOptionsItemSelected(item);
-    }
-    private class StableArrayAdapter extends ArrayAdapter<String> {
-
-        HashMap<String, Integer> mIdMap = new HashMap<String, Integer>();
-
-        public StableArrayAdapter(Context context, int textViewResourceId,
-                                  List<String> objects) {
-            super(context, textViewResourceId, objects);
-            for (int i = 0; i < objects.size(); ++i) {
-                mIdMap.put(objects.get(i), i);
-            }
-        }
-
-        @Override
-        public long getItemId(int position) {
-            String item = getItem(position);
-            return mIdMap.get(item);
-        }
-
-        @Override
-        public boolean hasStableIds() {
-            return true;
-        }
-
     }
 }
