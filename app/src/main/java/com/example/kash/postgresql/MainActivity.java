@@ -54,10 +54,18 @@ public class MainActivity extends ActionBarActivity
                 @Override
                 public void onItemClick(AdapterView<?> parent, View view, int position, long id)
                 {
-                    String profile=adapter.getItem(position);
-                    profile=profile.replaceFirst(".xml","");
-                    Toast.makeText(getApplicationContext(),"Profile "+profile+" selected",Toast.LENGTH_SHORT).show();
+                    String profile = adapter.getItem(position);
+                    profile = profile.replaceFirst(".xml", "");
+                    Toast.makeText(getApplicationContext(), "Profile " + profile + " selected", Toast.LENGTH_SHORT).show();
                     openTextual(profile);
+                }
+            });
+            lvProfiles.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener()
+            {
+                @Override
+                public boolean onItemLongClick(AdapterView<?> parent, View view, int position, long id)
+                {
+                    return false;
                 }
             });
         }
@@ -67,12 +75,18 @@ public class MainActivity extends ActionBarActivity
     {
         SharedPreferences prefs= this.getSharedPreferences(profile, Context.MODE_PRIVATE);
         user=prefs.getString("User", "").toString();
-        url=prefs.getString("URL","");
-        password=prefs.getString("Password","");
-        DB=prefs.getString("DB","");
+        url=prefs.getString("URL", "");
+        password=prefs.getString("Password", "");
+        DB=prefs.getString("DB", "");
         port = prefs.getInt("Port", 5432);
         Toast.makeText(this,"Profile Name: "+profile+"\n"+"URL: "+url+"\n"+"Username: "+user+"\n"+"Password: "+password+"\n"+"Database Name: "+DB+"\n"+"Port Name: "+port,Toast.LENGTH_LONG).show();
-
+        Intent intent=new Intent(this,TextQuery.class);
+        intent.putExtra("User",user);
+        intent.putExtra("URL", url);
+        intent.putExtra("DB",DB);
+        intent.putExtra("Password",password);
+        intent.putExtra("Port",port);
+        startActivity(intent);
     }
 
     @Override

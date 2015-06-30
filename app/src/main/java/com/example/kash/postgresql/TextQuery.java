@@ -6,6 +6,7 @@ import android.os.Bundle;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.widget.Toast;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
@@ -16,7 +17,7 @@ import java.sql.Statement;
 
 public class TextQuery extends ActionBarActivity
 {
-    String url,user,db,pass;
+    String url,user,DB,password;
     int port;
 
     private class FetchSQL extends AsyncTask<Void,Void,String>
@@ -31,7 +32,7 @@ public class TextQuery extends ActionBarActivity
                 e.printStackTrace();
                 retval = e.toString();
             }
-            String connurl = "jdbc:postgresql://"+url+"/"+db+"?user="+user+"&password="+pass;
+            String connurl = "jdbc:postgresql://"+url+"/"+DB+"?user="+user+"&password="+password;
             Log.d("Connection URL: ",connurl);
             Connection conn;
             try
@@ -61,6 +62,12 @@ public class TextQuery extends ActionBarActivity
     {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_text_query);
+        user=getIntent().getStringExtra("User");
+        password=getIntent().getStringExtra("User");
+        DB=getIntent().getStringExtra("User");
+        url=getIntent().getStringExtra("User");
+        port=getIntent().getIntExtra("Port",5432);
+        Toast.makeText(this,user+" "+password+" "+DB+" "+url+" "+port,Toast.LENGTH_SHORT).show();
         FetchSQL a=new FetchSQL();
         a.execute();
     }
