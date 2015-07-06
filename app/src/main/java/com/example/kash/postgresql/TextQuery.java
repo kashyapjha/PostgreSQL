@@ -1,12 +1,15 @@
 package com.example.kash.postgresql;
 
 import android.os.AsyncTask;
-import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
+import android.support.v7.app.ActionBarActivity;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.widget.Toast;
+import android.view.View;
+import android.widget.Button;
+import android.widget.EditText;
+import android.widget.TextView;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
@@ -19,59 +22,83 @@ public class TextQuery extends ActionBarActivity
 {
     String url,user,DB,password;
     int port;
-
-    private class FetchSQL extends AsyncTask<Void,Void,String>
-    {
-        protected String doInBackground(Void... params) {
-            String retval = "";
-            try
-            {
-                Class.forName("org.postgresql.Driver");
-            } catch (ClassNotFoundException e)
-            {
-                e.printStackTrace();
-                retval = e.toString();
-            }
-            String connurl = "jdbc:postgresql://"+url+"/"+DB+"?user="+user+"&password="+password;
-            Log.d("Connection URL: ",connurl);
-            Connection conn;
-            try
-            {
-                DriverManager.setLoginTimeout(5);
-                conn = DriverManager.getConnection(url);
-                Statement st = conn.createStatement();
-                String sql;
-                sql = "select * from students";
-                ResultSet rs = st.executeQuery(sql);
-                while (rs.next())
-                {
-                    retval = rs.getString(1);
-                }
-                rs.close();
-                st.close();
-            } catch (SQLException e)
-            {
-                e.printStackTrace();
-                retval = e.toString();
-            }
-            return retval;
-        }
-    }
+    EditText etQuery;
+    Button btnExec;
+    TextView tvResult;
+    String connurl;
+    Connection conn;
+    ResultSet rs;
+    String res;
     @Override
     protected void onCreate(Bundle savedInstanceState)
     {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_text_query);
         user=getIntent().getStringExtra("User");
-        password=getIntent().getStringExtra("User");
+        password=getIntent().getStringExtra("Password");
         DB=getIntent().getStringExtra("User");
-        url=getIntent().getStringExtra("User");
-        port=getIntent().getIntExtra("Port",5432);
-        Toast.makeText(this,user+" "+password+" "+DB+" "+url+" "+port,Toast.LENGTH_SHORT).show();
-        FetchSQL a=new FetchSQL();
+        url=getIntent().getStringExtra("URL");
+        port=getIntent().getIntExtra("Port", 5432);
+        Log.d("Connection Info",user+" "+password+" "+DB+" "+url+" "+port);
+        etQuery=(EditText)findViewById(R.id.etQuery);
+        tvResult=(TextView)findViewById(R.id.tvResult);
+        btnExec=(Button)findViewById(R.id.btnExec);
+        connurl = "jdbc:postgresql://" + url + "/" + DB + "?user=" + user + "&password=" + password;
+        Log.d("",connurl);
+        btnExec.setOnClickListener(new View.OnClickListener()
+        {
+            @Override
+            public void onClick(View v)
+            {
+                Log.d("", "Execute");
+                connect();
+            }
+        });
+    }
+
+    private void connect()
+    {
+        Connect a=new Connect();
+        Log.d("","Connect");
         a.execute();
     }
 
+    public void exec(String connurl,String query)
+    {
+        Log.d("", "Exec");
+        try
+        {
+            conn = DriverManager.getConnection(connurl);
+            Statement st = null;
+            st = conn.createStatement();
+            rs = st.executeQuery(query);
+            while (rs.next())
+            {
+                res=rs.getString(1);
+            }
+        }
+        catch(SQLException e)
+        {
+            Log.e("exec",e.toString());
+        }
+    }
+    private class Connect extends AsyncTask<Void, Void, String>
+    {
+        protected String doInBackground(Void... params)
+        {
+            try
+            {
+                Class.forName("org.postgresql.Driver");
+            }
+            catch (ClassNotFoundException e)
+            {
+                e.printStackTrace();
+                Log.e("", e.toString());
+            }
+            exec(connurl,etQuery.getText().toString());
+            return null;
+        }
+    }
     @Override
     public boolean onCreateOptionsMenu(Menu menu)
     {

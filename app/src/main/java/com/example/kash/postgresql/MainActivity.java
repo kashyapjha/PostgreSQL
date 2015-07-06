@@ -1,6 +1,8 @@
 package com.example.kash.postgresql;
 
+import android.app.AlertDialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
@@ -38,13 +40,18 @@ public class MainActivity extends ActionBarActivity
         File prefsdir=new File(getApplicationInfo().dataDir,"shared_prefs");
         if(prefsdir.exists() && prefsdir.isDirectory())
         {
-            String[] profiles=prefsdir.list();
+            final String[] profiles=prefsdir.list();
             final ArrayList<String> list = new ArrayList<>();
             for(int i=0;i<profiles.length;i++)
             {
                 list.add(profiles[i].replaceFirst(".xml",""));
             }
             list.remove("com.example.kash.postgresql_preferences");
+            for (String s : list)
+            {
+                if(s.endsWith(".bak"))
+                    list.remove(s);
+            }
             final ArrayAdapter<String> adapter=new ArrayAdapter(this,android.R.layout.simple_list_item_1,list);
             lvProfiles.setAdapter(adapter);
             lvProfiles.setClickable(true);
@@ -56,8 +63,9 @@ public class MainActivity extends ActionBarActivity
                 {
                     String profile = adapter.getItem(position);
                     profile = profile.replaceFirst(".xml", "");
-                    Toast.makeText(getApplicationContext(), "Profile " + profile + " selected", Toast.LENGTH_SHORT).show();
-                    openTextual(profile);
+                    Log.d("onItemClick", "Profile " + profile + " selected");
+                    //openTextual(profile);
+                    openGraphical(profile);
                 }
             });
             lvProfiles.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener()
@@ -65,7 +73,39 @@ public class MainActivity extends ActionBarActivity
                 @Override
                 public boolean onItemLongClick(AdapterView<?> parent, View view, int position, long id)
                 {
-                    return false;
+                    final String profile = adapter.getItem(position);
+                    AlertDialog.Builder builder1 = new AlertDialog.Builder(getApplicationContext());
+                    builder1.setMessage("Delete profile " + profile+" ?");
+                    builder1.setCancelable(true);
+                    builder1.setPositiveButton("Yes", new DialogInterface.OnClickListener()
+                    {
+                        public void onClick(DialogInterface dialog, int id)
+                        {
+                            File file = new File(getFilesDir().getPath()+"/../shared_prefs/"+profile+".xml");
+                            Log.d("",file.toString());
+                            if (file.delete())
+                            {
+                                Toast.makeText(getApplicationContext(), "Deleted", Toast.LENGTH_SHORT).show();
+                                populateList();
+                            }
+                            else
+                            {
+                                Toast.makeText(getApplicationContext(), "Not deleted", Toast.LENGTH_SHORT).show();
+                            }
+                            dialog.cancel();
+                        }
+                    });
+                    builder1.setNegativeButton("No", new DialogInterface.OnClickListener()
+                    {
+                        public void onClick(DialogInterface dialog, int id)
+                        {
+                            dialog.cancel();
+                        }
+                    });
+
+                    AlertDialog alert11 = builder1.create();
+                    alert11.show();
+                    return true;
                 }
             });
         }
@@ -79,8 +119,26 @@ public class MainActivity extends ActionBarActivity
         password=prefs.getString("Password", "");
         DB=prefs.getString("DB", "");
         port = prefs.getInt("Port", 5432);
-        Toast.makeText(this,"Profile Name: "+profile+"\n"+"URL: "+url+"\n"+"Username: "+user+"\n"+"Password: "+password+"\n"+"Database Name: "+DB+"\n"+"Port Name: "+port,Toast.LENGTH_LONG).show();
+        Log.d("openTextual","Profile Name: "+profile+"\n"+"URL: "+url+"\n"+"Username: "+user+"\n"+"Password: "+password+"\n"+"Database Name: "+DB+"\n"+"Port Name: "+port);
         Intent intent=new Intent(this,TextQuery.class);
+        intent.putExtra("User",user);
+        intent.putExtra("URL", url);
+        intent.putExtra("DB",DB);
+        intent.putExtra("Password",password);
+        intent.putExtra("Port",port);
+        startActivity(intent);
+    }
+
+    private void openGraphical(String profile)
+    {
+        SharedPreferences prefs= this.getSharedPreferences(profile, Context.MODE_PRIVATE);
+        user=prefs.getString("User", "").toString();
+        url=prefs.getString("URL", "");
+        password=prefs.getString("Password", "");
+        DB=prefs.getString("DB", "");
+        port = prefs.getInt("Port", 5432);
+        Log.d("openGraphical", "Profile Name: " + profile + "\n" + "URL: " + url + "\n" + "Username: " + user + "\n" + "Password: " + password + "\n" + "Database Name: " + DB + "\n" + "Port Name: " + port);
+        Intent intent=new Intent(this,Graphical_query.class);
         intent.putExtra("User",user);
         intent.putExtra("URL", url);
         intent.putExtra("DB",DB);

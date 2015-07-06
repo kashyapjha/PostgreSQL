@@ -7,30 +7,51 @@
     tools:context="com.example.kash.postgresql.TextQuery"
     android:id="@+id/RelativeLayout">
 
-    <GridLayout
+    <EditText
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:layout_centerVertical="true"
+        android:layout_height="wrap_content"
+        android:inputType="textNoSuggestions|textMultiLine"
+        android:ems="10"
+        android:id="@+id/etQuery"
+        android:cursorVisible="false"
+        android:elegantTextHeight="false"
+        android:elevation="4dp"
+        android:filterTouchesWhenObscured="true"
+        android:freezesText="true"
+        android:hapticFeedbackEnabled="true"
+        android:hint="Query"
+        android:isScrollContainer="false"
+        android:longClickable="true"
+        android:overScrollMode="ifContentScrolls"
+        android:saveEnabled="true"
+        android:typeface="monospace"
+        android:layout_above="@+id/btnExec"
         android:layout_centerHorizontal="true"
-        android:focusable="false"
-        android:id="@+id/GridLayout">
+        android:editable="false"
+        android:maxLines="5" />
 
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="334dp"
-            android:textAppearance="?android:attr/textAppearanceLarge"
-            android:text="Query Result"
-            android:id="@+id/tvResult"
-            android:layout_row="0"
-            android:layout_column="0" />
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Execute"
+        android:id="@+id/btnExec"
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentEnd="true"
+        android:clickable="true"
+        android:enabled="true"
+        android:typeface="normal"
+        android:visibility="visible"
+        android:inputType="textCapCharacters"
+        android:editable="false" />
 
-        <EditText
-            android:layout_width="match_parent"
-            android:layout_height="230dp"
-            android:inputType="textMultiLine"
-            android:ems="10"
-            android:id="@+id/etQuery"
-            android:layout_row="9"
-            android:layout_column="0" />
-    </GridLayout>
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textAppearance="?android:attr/textAppearanceLarge"
+        android:text="Large Text"
+        android:id="@+id/tvResult"
+        android:layout_alignParentTop="true"
+        android:layout_alignEnd="@+id/etQuery"
+        android:layout_alignParentStart="true"
+        android:minLines="5" />
 </RelativeLayout>
