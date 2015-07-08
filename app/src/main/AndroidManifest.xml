@@ -34,6 +34,14 @@
             android:name=".Graphical_query"
             android:label="@string/title_activity_graphical_query" >
         </activity>
+        <activity
+            android:name=".Table"
+            android:label="@string/title_activity_table" >
+        </activity>
+        <activity
+            android:name=".NewTable"
+            android:label="@string/title_activity_new_table" >
+        </activity>
     </application>
 
 </manifest>

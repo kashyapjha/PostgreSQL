@@ -36,7 +36,8 @@ public class MainActivity extends ActionBarActivity
         populateList();
     }
 
-    public void populateList() {
+    public void populateList()
+    {
         File prefsdir=new File(getApplicationInfo().dataDir,"shared_prefs");
         if(prefsdir.exists() && prefsdir.isDirectory())
         {
@@ -74,31 +75,24 @@ public class MainActivity extends ActionBarActivity
                 public boolean onItemLongClick(AdapterView<?> parent, View view, int position, long id)
                 {
                     final String profile = adapter.getItem(position);
-                    AlertDialog.Builder builder1 = new AlertDialog.Builder(getApplicationContext());
+                    AlertDialog.Builder builder1 = new AlertDialog.Builder(MainActivity.this);
                     builder1.setMessage("Delete profile " + profile+" ?");
                     builder1.setCancelable(true);
-                    builder1.setPositiveButton("Yes", new DialogInterface.OnClickListener()
-                    {
-                        public void onClick(DialogInterface dialog, int id)
-                        {
-                            File file = new File(getFilesDir().getPath()+"/../shared_prefs/"+profile+".xml");
-                            Log.d("",file.toString());
-                            if (file.delete())
-                            {
+                    builder1.setPositiveButton("Yes", new DialogInterface.OnClickListener() {
+                        public void onClick(DialogInterface dialog, int id) {
+                            File file = new File(getFilesDir().getPath() + "/../shared_prefs/" + profile + ".xml");
+                            Log.d("", file.toString());
+                            if (file.delete()) {
                                 Toast.makeText(getApplicationContext(), "Deleted", Toast.LENGTH_SHORT).show();
                                 populateList();
-                            }
-                            else
-                            {
+                            } else {
                                 Toast.makeText(getApplicationContext(), "Not deleted", Toast.LENGTH_SHORT).show();
                             }
                             dialog.cancel();
                         }
                     });
-                    builder1.setNegativeButton("No", new DialogInterface.OnClickListener()
-                    {
-                        public void onClick(DialogInterface dialog, int id)
-                        {
+                    builder1.setNegativeButton("No", new DialogInterface.OnClickListener() {
+                        public void onClick(DialogInterface dialog, int id) {
                             dialog.cancel();
                         }
                     });
