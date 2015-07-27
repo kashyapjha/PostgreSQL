@@ -40,7 +40,8 @@
         </activity>
         <activity
             android:name=".NewTable"
-            android:label="@string/title_activity_new_table" >
+            android:label="@string/title_activity_new_table"
+            android:exported="true">
         </activity>
     </application>
 
