@@ -29,6 +29,7 @@ public class Graphical_query extends ActionBarActivity
     ListView lvTables;
     ArrayList<String> tables =new ArrayList<>();
     String addTable="+ Create new table +";
+    ArrayAdapter<String> adapter;
     @Override
     protected void onCreate(Bundle savedInstanceState)
     {
@@ -43,35 +44,29 @@ public class Graphical_query extends ActionBarActivity
         Log.d("GQ/onCreate", "Connection Info: " + "\nUser: " + user + "\nPassword: " + password + "\nDatabase Name:  " + DB + "\nURL: " + url + "\nPort " + port);
         connect();
         lvTables=(ListView)findViewById(R.id.lvTables);
-        final ArrayAdapter<String> adapter=new ArrayAdapter(this,android.R.layout.simple_list_item_1,tables);
+        adapter=new ArrayAdapter(this,android.R.layout.simple_list_item_1,tables);
         lvTables.setAdapter(adapter);
         lvTables.setClickable(true);
         lvTables.setLongClickable(true);
-        lvTables.setOnItemClickListener(new AdapterView.OnItemClickListener()
-        {
+        lvTables.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
-            public void onItemClick(AdapterView<?> parent, View view, int position, long id)
-            {
-                String table=adapter.getItem(position);
-                if (adapter.getItem(position)!=addTable)
-                {
-                    Intent intent=new Intent(Graphical_query.this,Table.class);
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                String table = adapter.getItem(position);
+                if (adapter.getItem(position) != addTable) {
+                    Intent intent = new Intent(Graphical_query.this, Table.class);
+                    intent.putExtra("Connection URL", connurl);
                     intent.putExtra("Table", table);
                     Log.d("GQ/onItemClick", table + " selected");
                     startActivity(intent);
-                }
-                else
-                {
-                    Intent intent =new Intent(Graphical_query.this,NewTable.class);
+                } else {
+                    Intent intent = new Intent(Graphical_query.this, NewTable.class);
                     startActivity(intent);
                 }
             }
         });
-        lvTables.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener()
-        {
+        lvTables.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
             @Override
-            public boolean onItemLongClick(AdapterView<?> parent, View view, int position, long id)
-            {
+            public boolean onItemLongClick(AdapterView<?> parent, View view, int position, long id) {
                 return true;
             }
         });
@@ -98,14 +93,22 @@ public class Graphical_query extends ActionBarActivity
                 ResultSet rs = md.getTables(null, null, "%",types);
                 while (rs.next())
                 {
-                    Log.d("GQ/doInBackground",rs.getString(3));
+                    Log.d("GQ/doInBackground", rs.getString(3));
                     tables.add(rs.getString(3));
                 }
                 tables.add(addTable);
+                runOnUiThread(new Runnable()
+                {
+                    @Override
+                    public void run()
+                    {
+                        adapter.notifyDataSetChanged();
+                    }
+                });
             }
             catch (SQLException e)
             {
-                Log.e("",e.toString());
+                Log.e("", e.toString());
             }
             return null;
         }
