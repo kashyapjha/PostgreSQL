@@ -48,17 +48,22 @@ public class Graphical_query extends ActionBarActivity
         lvTables.setAdapter(adapter);
         lvTables.setClickable(true);
         lvTables.setLongClickable(true);
-        lvTables.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+        lvTables.setOnItemClickListener(new AdapterView.OnItemClickListener()
+        {
             @Override
-            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id)
+            {
                 String table = adapter.getItem(position);
-                if (adapter.getItem(position) != addTable) {
+                if (adapter.getItem(position) != addTable)
+                {
                     Intent intent = new Intent(Graphical_query.this, Table.class);
                     intent.putExtra("Connection URL", connurl);
                     intent.putExtra("Table", table);
                     Log.d("GQ/onItemClick", table + " selected");
                     startActivity(intent);
-                } else {
+                }
+                else
+                {
                     Intent intent = new Intent(Graphical_query.this, NewTable.class);
                     startActivity(intent);
                 }

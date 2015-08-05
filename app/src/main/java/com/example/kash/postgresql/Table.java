@@ -1,40 +1,57 @@
 package com.example.kash.postgresql;
 
 import android.os.AsyncTask;
-import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
+import android.support.v7.app.ActionBarActivity;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.widget.ArrayAdapter;
+import android.widget.ListView;
 
 import java.sql.Connection;
-import java.sql.DatabaseMetaData;
 import java.sql.DriverManager;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.ArrayList;
 
 
 public class Table extends ActionBarActivity
 {
     String connurl;
-    String table;
+    String tablename;
     Connection conn;
+    ListView lvRows;
+    ArrayList<String[]> list;
+    ArrayAdapter<String> adapter;
+    public String table[][];
     @Override
     protected void onCreate(Bundle savedInstanceState)
     {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_table);
         connurl=getIntent().getStringExtra("Connection URL");
-        table=getIntent().getStringExtra("Table");
-        Log.d("Table","Connection URL: "+connurl+"\n Table: "+table);
-        Connect con=new Connect();
-        con.execute();
-
+        tablename=getIntent().getStringExtra("Table");
+        Log.d("Table", "Connection URL: " + connurl + "\n Table: " + tablename);
+        lvRows=(ListView) findViewById(R.id.lvRows);
+        connect();
     }
     private class Connect extends AsyncTask<Void, Void, String>
     {
+        protected void onPostExecute()
+        {
+            Log.d("","onPostExecute started");
+            list = new ArrayList<String[]>(table.length);
+            adapter=new ArrayAdapter(getApplicationContext(),android.R.layout.simple_list_item_1,list);
+            lvRows.setAdapter(adapter);
+            for(String[] row: table)
+            {
+                list.add(row);
+                Log.d("","Row added");
+            }
+        }
         protected String doInBackground(Void... params)
         {
             try
@@ -49,33 +66,50 @@ public class Table extends ActionBarActivity
             try
             {
                 conn = DriverManager.getConnection(connurl);
-                Statement st=conn.createStatement();
+                Statement st=conn.createStatement(ResultSet.TYPE_SCROLL_INSENSITIVE,ResultSet.CONCUR_READ_ONLY);
                 st.setFetchSize(100);
-                ResultSet rs=st.executeQuery("select * from "+table);
-                while(rs.next())
+                ResultSet rs=st.executeQuery("select * from " + tablename);
+                ResultSetMetaData rsmd = rs.getMetaData();
+                int numberOfColumns = rsmd.getColumnCount();
+                rs.last();
+                int numberOfRows=rs.getRow();
+                rs.first();
+                Log.d("Table Dimensions: ", "Rows:" + numberOfRows + ", Columns:" + numberOfColumns);
+                table= new String[numberOfRows][numberOfColumns];
+                int i=1;
+                int j;
+                do
                 {
-                    StringBuilder sb = new StringBuilder();
-                    ResultSetMetaData rsmd = rs.getMetaData();
-                    int numberOfColumns = rsmd.getColumnCount();
-                    for (int i = 1; i <= numberOfColumns; i++)
+                    for(j=1;j<=numberOfColumns;j++)
                     {
-                        sb.append(rs.getString(i));
-                        if (i < numberOfColumns)
-                        {
-                            sb.append(", ");
-                        }
+                        table[i-1][j-1]=rs.getString(j);
+                        Log.d("Data",rs.getString(j));
                     }
-                    String data = sb.toString();
-                    Log.d("Table",data);
+                    i++;
                 }
+                while(rs.next());
                 Log.d("Table","End of ResultSet");
+                /*runOnUiThread(new Runnable()
+                {
+                    @Override
+                    public void run()
+                    {
+                        adapter.notifyDataSetChanged();
+                    }
+                });*/
             }
             catch (SQLException e)
             {
-                Log.e("",e.toString());
+                Log.e("SQLException",e.toString());
             }
             return null;
         }
+    }
+
+    public void connect()
+    {
+        Connect con=new Connect();
+        con.execute();
     }
 
     @Override
