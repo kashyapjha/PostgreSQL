@@ -1,13 +1,19 @@
 package com.example.kash.postgresql;
 
+import android.graphics.Canvas;
+import android.graphics.Color;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v7.app.ActionBarActivity;
+import android.text.InputType;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.widget.ArrayAdapter;
-import android.widget.ListView;
+import android.view.inputmethod.EditorInfo;
+import android.widget.EditText;
+import android.widget.FrameLayout;
+import android.widget.TableLayout;
+import android.widget.TableRow;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
@@ -15,7 +21,6 @@ import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.sql.Statement;
-import java.util.ArrayList;
 
 
 public class Table extends ActionBarActivity
@@ -23,10 +28,11 @@ public class Table extends ActionBarActivity
     String connurl;
     String tablename;
     Connection conn;
-    ListView lvRows;
-    ArrayList<String[]> list;
-    ArrayAdapter<String> adapter;
     public String table[][];
+    public int numberOfRows;
+    public int numberOfColumns;
+    TableLayout tableLayout;
+    FrameLayout frameLayout;
     @Override
     protected void onCreate(Bundle savedInstanceState)
     {
@@ -35,23 +41,35 @@ public class Table extends ActionBarActivity
         connurl=getIntent().getStringExtra("Connection URL");
         tablename=getIntent().getStringExtra("Table");
         Log.d("Table", "Connection URL: " + connurl + "\n Table: " + tablename);
-        lvRows=(ListView) findViewById(R.id.lvRows);
+        frameLayout= (FrameLayout) findViewById(R.id.frameLayout);
+        frameLayout.draw(new Canvas());
+        tableLayout= (TableLayout) findViewById(R.id.tableLayout);
         connect();
+    }
+    private void fillTable(final int x, final int y, final String[][] matrix, TableLayout table)
+    {
+        Log.d("","fillTable started");
+        table.removeAllViews();
+        for (int i = 0; i < x; i++)
+        {
+            TableRow row = new TableRow(getApplicationContext());
+            row.setLayoutParams(new TableRow.LayoutParams(TableRow.LayoutParams.WRAP_CONTENT, TableRow.LayoutParams.WRAP_CONTENT));
+            for (int j = 0; j < y; j++)
+            {
+                EditText edit = new EditText(getApplicationContext());
+                edit.setInputType(EditorInfo.TYPE_NULL);
+                edit.setLayoutParams(new TableRow.LayoutParams(TableRow.LayoutParams.WRAP_CONTENT, TableRow.LayoutParams.WRAP_CONTENT));
+                edit.setText((matrix[i][j]));
+                edit.setTextColor(Color.BLACK);
+                edit.setKeyListener(null);
+                row.addView(edit);
+            }
+            table.addView(row);
+        }
+        Log.d("", "fillTable stopped");
     }
     private class Connect extends AsyncTask<Void, Void, String>
     {
-        protected void onPostExecute()
-        {
-            Log.d("","onPostExecute started");
-            list = new ArrayList<String[]>(table.length);
-            adapter=new ArrayAdapter(getApplicationContext(),android.R.layout.simple_list_item_1,list);
-            lvRows.setAdapter(adapter);
-            for(String[] row: table)
-            {
-                list.add(row);
-                Log.d("","Row added");
-            }
-        }
         protected String doInBackground(Void... params)
         {
             try
@@ -66,13 +84,13 @@ public class Table extends ActionBarActivity
             try
             {
                 conn = DriverManager.getConnection(connurl);
-                Statement st=conn.createStatement(ResultSet.TYPE_SCROLL_INSENSITIVE,ResultSet.CONCUR_READ_ONLY);
+                Statement st=conn.createStatement(ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_READ_ONLY);
                 st.setFetchSize(100);
                 ResultSet rs=st.executeQuery("select * from " + tablename);
                 ResultSetMetaData rsmd = rs.getMetaData();
-                int numberOfColumns = rsmd.getColumnCount();
+                numberOfColumns = rsmd.getColumnCount();
                 rs.last();
-                int numberOfRows=rs.getRow();
+                numberOfRows=rs.getRow();
                 rs.first();
                 Log.d("Table Dimensions: ", "Rows:" + numberOfRows + ", Columns:" + numberOfColumns);
                 table= new String[numberOfRows][numberOfColumns];
@@ -89,14 +107,15 @@ public class Table extends ActionBarActivity
                 }
                 while(rs.next());
                 Log.d("Table","End of ResultSet");
-                /*runOnUiThread(new Runnable()
+                runOnUiThread(new Runnable()
                 {
                     @Override
                     public void run()
                     {
-                        adapter.notifyDataSetChanged();
+                        Log.d("","Number of rows: "+numberOfRows+", Number of columns: "+numberOfColumns);
+                        fillTable(numberOfRows, numberOfColumns, table, tableLayout);
                     }
-                });*/
+                });
             }
             catch (SQLException e)
             {
@@ -136,4 +155,6 @@ public class Table extends ActionBarActivity
 
         return super.onOptionsItemSelected(item);
     }
+
 }
+
